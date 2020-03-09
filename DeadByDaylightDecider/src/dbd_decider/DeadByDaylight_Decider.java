@@ -23,7 +23,7 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
 
 	/**
 	 * Dead By Daylight Randomizer
-	 * @author SirBassington | twitch.tv/SirBassington | Discord SirBassington#9848
+	 * @author SirBassington
 	 * 
 	 * 
 	 * Decides for the user which side they should play in
@@ -369,9 +369,7 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
         		+ "<br>program things themself with or without educational support!"
         		+ "<br><br>The aim of this program is to go a step further than other DBD randomizers by also<br>choosing which characters, items, addons, perks, and"
         		+ " offerings you should bring to a trial.<br> The program is recursive with a mostly psuedorandom algorithm so you can reroll as<br>many times as you wish."
-        		+ "<br><br>If you have any input on things like bugs, issues or just want to chat you can contact me<br>via discord @ SirBassington#9848 in any chat, "
-        		+ "preferrably a private or specialized chat to<br>not clutter public channels with this program's issues or even my \"personal business\"<br>email"
-        		+ " SirBassington@criptext.com. I absolutely hope you find this useful or charming at<br>the least to use it whenever you want to spice up your matches!"
+        		+ " I absolutely hope you find this useful or charming at<br>the least to use it whenever you want to spice up your matches!"
         		+ "<br><br>Sincerely, SirBassington.";
         
         infoLabel = new JLabel(generalText);
