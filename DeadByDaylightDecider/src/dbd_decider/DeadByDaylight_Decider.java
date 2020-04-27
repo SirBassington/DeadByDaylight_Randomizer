@@ -15,11 +15,14 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Map;
 
 @SuppressWarnings("serial")
-public class DeadByDaylight_Decider extends JFrame implements ActionListener {
+public class DeadByDaylight_Decider extends JFrame {
 
 	/**
 	 * Dead By Daylight Randomizer
@@ -37,7 +40,7 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
 	 * Everything will be documented for the sake of helping observers understand what's happening when and where and for good programming procedures.
 	 */
 	static JLabel background, charPortrait, charPortraitBackground, charPortraitOverlay, charShadow, itemPower, addOn1, addOn2, offering,
-		perk1, perk2, perk3, perk4, infoBoxArea, rightPaneSummary, summary, infoLabel, settingsPanel = new JLabel();
+		perk1, perk2, perk3, perk4, infoBoxArea, rightPaneSummary, summary, infoLabel = new JLabel();
 	
 	static String baseChoice, charType, itemChoice, finalChar, finalAddOn1, finalAddOn2, finalOffering, finalPerk1, finalPerk2, finalPerk3,
 		finalPerk4, finalToolbox, finalMedkit, finalFlashlight, finalMap, finalKey = null;
@@ -46,14 +49,26 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
 	static boolean isKiller, isSurvivor, isUndecided = false;
 	
 	static JButton survButton, randButton, killButton, infoButton, infoCloseButton, settingsButton, settingsCloseButton;
-	static JCheckBox charCheck, itemPowerAddonCheck, perkCheck, offeringCheck = new JCheckBox();
+
+	static JCheckBox itemCheck, addonCheck, offeringCheck = new JCheckBox();
+	static JRadioButton radioDefault, radioP1, radioP2, radioP3, radioP4 = new JRadioButton();
 	static BufferedImage image;
 	
 	static Font sulB = new Font("Segoe UI Light", Font.BOLD, 24);
 	static Font sulBS = new Font("Segoe UI Light", Font.BOLD, 20);
 	static Font emeR = new Font("Segoe UI Light", Font.BOLD, 14);
 	static Font verD = new Font("Verdana", Font.BOLD, 20);
-	static Font verDRegular = new Font("Verdana", Font.PLAIN, 20);
+	static Font verDTitle = new Font("Verdana", Font.PLAIN, 30);
+	
+	//Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
+	//map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+	//font = font.deriveFont(map);
+	
+	//Map<TextAttribute, Integer> fontAttributes = new HashMap<TextAttribute, Integer>();
+	//fontAttributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+	static Map<TextAttribute, Object> fontAttributes = new Hashtable<TextAttribute, Object>();
+	
+	//static Font verDLargeUnderline = new Font("Verdana", Font.PLAIN, 30);
 	static Font verDLarge = new Font("Verdana", Font.PLAIN, 40);
 	static Color whiteF = Color.decode("#ffffff");
 	static Color emergencyR = Color.decode("#ff1a1a");
@@ -62,7 +77,10 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
 	static int width = 1600, height = 900;
 	
 	public static void addComponentsToPane(Container pane)
-	{
+	{	
+		fontAttributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+		Font verDLargeUnderline = new Font("Verdana", Font.PLAIN, 30).deriveFont(fontAttributes);
+		
 		/*
 		 * The following JPanel stuff are preparations for all the graphical components in the program.
 		 * They help determine sizes for each JPanel regarding their parent container.
@@ -257,7 +275,6 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
         pane.setLayout(new BorderLayout());
         pane.add(mergePanel);
         
-        
         //settingsPanel stuff
         settingsPanel.setLayout(new GridBagLayout());
         GridBagConstraints settP = new GridBagConstraints();
@@ -266,65 +283,155 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
         settP.gridx = 0;
         settP.gridy = 0;
         settP.weighty = 1;
-        JLabel settingsTitle = new JLabel("Settings - Work In Progress section");
+        JLabel settingsTitle = new JLabel("<html>Settings - Work In Progress section<br>Does nothing at the moment");
         settingsTitle.setFont(verDLarge);
         settingsTitle.setForeground(whiteF);
         settingsPanel.add(settingsTitle, settP);
         
         settP.gridy++;
         JLabel settingsPurpleBar = new JLabel();
-        settingsPurpleBar.setIcon(new ImageIcon(((References.createVisuals("/nonDBDArtwork/purpleBar.png")).getImage()).getScaledInstance(400, 3, java.awt.Image.SCALE_SMOOTH)));
+        //settingsPurpleBar.setIcon(new ImageIcon(((References.createVisuals("/nonDBDArtwork/purpleBar.png")).getImage()).getScaledInstance(400, 3, java.awt.Image.SCALE_SMOOTH)));
+        References.makeVisuals(settingsPurpleBar, "/nonDBDArtwork/purpleBar.png", 950, 3);
         settingsPanel.add(settingsPurpleBar, settP);
         
         settP.gridy++;
-        JPanel optionSets = new JPanel();
-        JPanel charCheckPanel = new JPanel();
-        JPanel itemPowerAddonsPanel = new JPanel();
-        optionSets.setOpaque(false);
-        optionSets.setLayout(new GridBagLayout());
+        JPanel defaultSet = new JPanel();
+        defaultSet.setOpaque(false);
+        defaultSet.setLayout(new GridBagLayout());
+        GridBagConstraints deSet = new GridBagConstraints();
+        
+        deSet.gridy = 0;
+        deSet.anchor = GridBagConstraints.CENTER;
+        {
+        	JLabel titleDefault = new JLabel("Default Setting");
+        	titleDefault.setOpaque(false);
+        	titleDefault.setFont(verDLargeUnderline);
+        	titleDefault.setForeground(whiteF);
+        	defaultSet.add(titleDefault, deSet);
+        }
+        deSet.gridy++;
+        deSet.insets = new Insets(5, 0, 0, 0);
+        {
+        	radioDefault = new JRadioButton("Full Randomization - No Restraints");
+        	radioDefault.setBackground(darkTranparency);
+        	radioDefault.setFont(verD);
+        	radioDefault.setForeground(whiteF);
+        	radioDefault.setFocusPainted(false);
+        	defaultSet.add(radioDefault, deSet);
+        }
+        settingsPanel.add(defaultSet, settP);
+        
+        /*
+         * optionSet Panel zone
+         */
+        settP.gridy++;
+        JPanel optionSet = new JPanel();
+        optionSet.setOpaque(false);
+        optionSet.setLayout(new GridBagLayout());
         GridBagConstraints opSet = new GridBagConstraints();
         
         opSet.gridy = 0;
+        opSet.gridwidth = 4;
+        opSet.anchor = GridBagConstraints.CENTER;
         {
-        	JLabel settingsOptions = new JLabel("Select the parts you wish to randomize:");
-        	settingsOptions.setOpaque(false);
-        	settingsOptions.setFont(verD);
-        	settingsOptions.setForeground(whiteF);
-        	optionSets.add(settingsOptions, opSet);
+        	JLabel titleA = new JLabel("Variable Options");
+        	titleA.setOpaque(false);
+        	titleA.setFont(verDLargeUnderline);
+        	titleA.setForeground(whiteF);
+        	optionSet.add(titleA, opSet);
         }
+        opSet.gridy++;
+        opSet.gridwidth = 1;
+        opSet.gridx = 0;
+        opSet.insets = new Insets(5, 40, 0, 0);
+        {
+        	itemCheck = new JCheckBox("Items", false);
+        	//itemCheck.setOpaque(false);
+        	itemCheck.setBackground(darkTranparency);
+        	itemCheck.setFont(verD);
+        	itemCheck.setForeground(whiteF);
+        	itemCheck.setFocusPainted(false);
+            optionSet.add(itemCheck, opSet);
+        }
+        opSet.gridx++;
+        {
+        	addonCheck = new JCheckBox("Killer/Survivor Add-ons", false);
+        	addonCheck.setBackground(darkTranparency);
+        	addonCheck.setFont(verD);
+        	addonCheck.setForeground(whiteF);
+        	addonCheck.setFocusPainted(false);
+            optionSet.add(addonCheck, opSet);
+        }
+        opSet.gridx++;
+        {
+        	offeringCheck = new JCheckBox("Offerings", false);
+        	offeringCheck.setBackground(darkTranparency);
+        	offeringCheck.setFont(verD);
+        	offeringCheck.setForeground(whiteF);
+        	offeringCheck.setFocusPainted(false);
+            optionSet.add(offeringCheck, opSet);
+        }
+        settingsPanel.add(optionSet, settP);
         
-        opSet.gridy++;
-        opSet.anchor = GridBagConstraints.WEST;
+        /*
+         * perkSet Panel zone
+         */
+        settP.gridy++;
+        JPanel perkSet = new JPanel();
+        perkSet.setOpaque(false);
+        perkSet.setLayout(new GridBagLayout());
+        GridBagConstraints peSet = new GridBagConstraints();
+        
+        peSet.gridy = 0;
+        peSet.gridwidth = 5;
+        peSet.anchor = GridBagConstraints.CENTER;
         {
-            //charCheckPanel.setLayout(new GridBagLayout());
-            //GridBagConstraints charCheckPanelLayout = new GridBagConstraints();
-        	
-            //charCheckPanelLayout.gridx = 0;
-        	charCheck = new JCheckBox("Characters", true);
-            charCheck.setOpaque(true);
-            charCheck.setBackground(darkTranparency);
-            charCheck.setFont(sulB);
-            charCheck.setFont(verD);
-            charCheck.setForeground(whiteF);
-            charCheck.setFocusPainted(false);
-            charCheckPanel.setOpaque(false);
-            optionSets.add(charCheck, opSet);
+        	JLabel titleB = new JLabel("Number of Perks to Decide");
+        	titleB.setOpaque(false);
+        	titleB.setFont(verDLargeUnderline);
+        	titleB.setForeground(whiteF);
+        	perkSet.add(titleB, peSet);
         }
-		
-        opSet.gridy++;
+        peSet.gridy++;
+        peSet.gridx = 0;
+        peSet.gridwidth = 1;
+        peSet.insets = new Insets(5, 50, 0, 0);
         {
-        	itemPowerAddonCheck = new JCheckBox("Items and addons", true);
-        	itemPowerAddonCheck.setOpaque(true);
-        	itemPowerAddonCheck.setBackground(darkTranparency);
-            itemPowerAddonCheck.setFont(sulB);
-            itemPowerAddonCheck.setFont(verD);
-            itemPowerAddonCheck.setForeground(whiteF);
-            itemPowerAddonCheck.setFocusPainted(true);
-            itemPowerAddonsPanel.setOpaque(false);
-            optionSets.add(itemPowerAddonCheck, opSet);
+        	radioP1 = new JRadioButton("1");
+        	radioP1.setBackground(darkTranparency);
+        	radioP1.setFont(verD);
+        	radioP1.setForeground(whiteF);
+        	radioP1.setFocusPainted(false);
+        	perkSet.add(radioP1, peSet);
         }
-
-        settingsPanel.add(optionSets, settP);
+        peSet.gridx++;
+        {
+        	radioP2 = new JRadioButton("2");
+        	radioP2.setBackground(darkTranparency);
+        	radioP2.setFont(verD);
+        	radioP2.setForeground(whiteF);
+        	radioP2.setFocusPainted(false);
+        	perkSet.add(radioP2, peSet);
+        }
+        peSet.gridx++;
+        {
+        	radioP3 = new JRadioButton("3");
+        	radioP3.setBackground(darkTranparency);
+        	radioP3.setFont(verD);
+        	radioP3.setForeground(whiteF);
+        	radioP3.setFocusPainted(false);
+        	perkSet.add(radioP3, peSet);
+        }
+        peSet.gridx++;
+        {
+        	radioP4 = new JRadioButton("4");
+        	radioP4.setBackground(darkTranparency);
+        	radioP4.setFont(verD);
+        	radioP4.setForeground(whiteF);
+        	radioP4.setFocusPainted(false);
+        	perkSet.add(radioP4, peSet);
+        }
+        settingsPanel.add(perkSet, settP);
         
         settP.gridy++;
         {
@@ -339,8 +446,9 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
         	settingsPanel.add(settingsCloseButton, settP);
         }
         
-        
-        //infoPanel stuff
+        /*
+         * infoPanel stuff
+         */
         infoPanel.setLayout(new GridBagLayout());
         GridBagConstraints infoP = new GridBagConstraints();
         infoPanel.setBackground(darkTranparency);
@@ -355,14 +463,14 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
         
         infoP.gridy++;
         JLabel infoPurpleBar = new JLabel();
-        infoPurpleBar.setIcon(new ImageIcon(((References.createVisuals("/nonDBDArtwork/purpleBar.png")).getImage()).getScaledInstance(950, 3, java.awt.Image.SCALE_SMOOTH)));
+        References.makeVisuals(infoPurpleBar, "/nonDBDArtwork/purpleBar.png", 950, 3);
         infoPanel.add(infoPurpleBar, infoP);
         
         infoP.gridy++;
         String generalText = "<html>Dear user, thank you for trying out this Dead By Daylight Randomizer/Decider program!<br>"
         		+ "<br>This was, and still is a passion project to help me test out my programming skills that I<br>have had to learned at home out of absolute boredom. "
         		+ "The program is made with base<br>Java programming, ie no extra libraries, and is made to hopefully run on systems<br>regardless if they use"
-        		+ " letter drive systems for storage or not."
+        		+ " letter drive systems or not."
         		+ "<br><br>All works of Dead By Daylight properties in this application belong to their respective<br>owners (Behavior Interactive) and I do not "
         		+ "obviously claim to own them. I only claim<br>the minimal"
         		+ " artwork I made for this program and the code which I plan to push onto<br>Github eventually for open source reasons and maybe inspire others wanting to"
@@ -373,7 +481,7 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
         		+ "<br><br>Sincerely, SirBassington.";
         
         infoLabel = new JLabel(generalText);
-        infoLabel.setFont(verDRegular);
+        infoLabel.setFont(verD);
         infoLabel.setForeground(whiteF);
         infoPanel.add(infoLabel, infoP);
         
@@ -477,16 +585,12 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
         rightLeastTop.setOpaque(false);
         rightLeastBottom.setOpaque(false);
         
-        settingsButton = new RoundButton(new ImageIcon(((References.createVisuals("/settings.png").getImage()).getScaledInstance(128, 128, java.awt.Image.SCALE_SMOOTH))));
-        survButton = new RoundButton(new ImageIcon(((References.createVisuals("/surv.png").getImage()).getScaledInstance(128, 128, java.awt.Image.SCALE_SMOOTH))));
-        randButton = new RoundButton(new ImageIcon(((References.createVisuals("/rand.png").getImage()).getScaledInstance(128, 128, java.awt.Image.SCALE_SMOOTH))));
-        killButton = new RoundButton(new ImageIcon(((References.createVisuals("/kill.png").getImage()).getScaledInstance(128, 128, java.awt.Image.SCALE_SMOOTH))));
-        infoButton = new RoundButton(new ImageIcon(((References.createVisuals("/info.png").getImage()).getScaledInstance(128, 128, java.awt.Image.SCALE_SMOOTH))));
-        //infoButton.setText("<html>App<br>Info");
-        //infoButton.setHorizontalTextPosition(JLabel.CENTER);
-        //infoButton.setVerticalTextPosition(JLabel.CENTER);
-        //infoButton.setFont(verD);
-        //infoButton.setForeground(whiteF);
+        //Initialize JButtons (or RoundButtons that extend from JButton) with an image
+        settingsButton = new RoundButton(new ImageIcon((References.createVisuals("/settings.png").getImage()).getScaledInstance(128, 128, java.awt.Image.SCALE_SMOOTH)));
+        survButton = new RoundButton(new ImageIcon((References.createVisuals("/surv.png").getImage()).getScaledInstance(128, 128, java.awt.Image.SCALE_SMOOTH)));
+        randButton = new RoundButton(new ImageIcon((References.createVisuals("/rand.png").getImage()).getScaledInstance(128, 128, java.awt.Image.SCALE_SMOOTH)));
+        killButton = new RoundButton(new ImageIcon((References.createVisuals("/kill.png").getImage()).getScaledInstance(128, 128, java.awt.Image.SCALE_SMOOTH)));
+        infoButton = new RoundButton(new ImageIcon((References.createVisuals("/info.png").getImage()).getScaledInstance(128, 128, java.awt.Image.SCALE_SMOOTH)));
         
         //Begin adding user friendly UI features
         //Buttons that direct all program components
@@ -633,6 +737,102 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
         settingsPanel.setVisible(false);
         infoPanel.setVisible(false);
         
+        radioDefault.setSelected(true);
+        
+        createActionListeners(infoPanel, settingsPanel);
+    }
+	
+	/*
+	 * Makes actionListeners for the specified components and handle any other UI actions that should be handled when something is interacted with.
+	 */
+    private static void createActionListeners(JPanel infoIn, JPanel settingIn)
+    {
+    	radioDefault.addActionListener(new ActionListener()
+        {
+        	@Override
+		    public void actionPerformed(ActionEvent act)
+			{
+        		if (radioDefault.isSelected() == true)
+        		{
+        			itemCheck.setSelected(false);
+        			addonCheck.setSelected(false);
+        			offeringCheck.setSelected(false);
+        			radioP1.setSelected(false);
+        			radioP2.setSelected(false);
+        			radioP3.setSelected(false);
+        			radioP4.setSelected(false);
+        		}
+			}
+        });
+        itemCheck.addActionListener(new ActionListener()
+        {
+        	@Override
+		    public void actionPerformed(ActionEvent act)
+			{
+        		radioDefault.setSelected(false);
+			}
+        });
+        addonCheck.addActionListener(new ActionListener()
+        {
+        	@Override
+		    public void actionPerformed(ActionEvent act)
+			{
+        		radioDefault.setSelected(false);
+			}
+        });
+        offeringCheck.addActionListener(new ActionListener()
+        {
+        	@Override
+		    public void actionPerformed(ActionEvent act)
+			{
+        		radioDefault.setSelected(false);
+			}
+        });
+        radioP1.addActionListener(new ActionListener()
+        {
+        	@Override
+		    public void actionPerformed(ActionEvent act)
+			{
+        		radioDefault.setSelected(false);
+    			radioP2.setSelected(false);
+    			radioP3.setSelected(false);
+    			radioP4.setSelected(false);
+			}
+        });
+        radioP2.addActionListener(new ActionListener()
+        {
+        	@Override
+		    public void actionPerformed(ActionEvent act)
+			{
+        		radioDefault.setSelected(false);
+    			radioP1.setSelected(false);
+    			radioP3.setSelected(false);
+    			radioP4.setSelected(false);
+			}
+        });
+        radioP3.addActionListener(new ActionListener()
+        {
+        	@Override
+		    public void actionPerformed(ActionEvent act)
+			{
+        		radioDefault.setSelected(false);
+    			radioP1.setSelected(false);
+    			radioP2.setSelected(false);
+    			radioP4.setSelected(false);
+			}
+        });
+        radioP4.addActionListener(new ActionListener()
+        {
+        	@Override
+		    public void actionPerformed(ActionEvent act)
+			{
+        		radioDefault.setSelected(false);
+    			radioP1.setSelected(false);
+    			radioP2.setSelected(false);
+    			radioP3.setSelected(false);
+			}
+        });
+        
         survButton.addActionListener(new ActionListener()
 		{
 			@Override
@@ -676,7 +876,7 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
 				killButton.setEnabled(false);
 				infoButton.setEnabled(false);
 				settingsButton.setEnabled(false);
-				infoPanel.setVisible(true);
+				infoIn.setVisible(true);
 		    }
 		});
 		infoCloseButton.addActionListener(new ActionListener()
@@ -689,7 +889,7 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
 				killButton.setEnabled(true);
 				infoButton.setEnabled(true);
 				settingsButton.setEnabled(true);
-				infoPanel.setVisible(false);
+				infoIn.setVisible(false);
 		    }
 		});
 		settingsButton.addActionListener(new ActionListener()
@@ -702,7 +902,7 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
 				killButton.setEnabled(false);
 				infoButton.setEnabled(false);
 				settingsButton.setEnabled(false);
-				settingsPanel.setVisible(true);
+				settingIn.setVisible(true);
 		    }
 		});
 		settingsCloseButton.addActionListener(new ActionListener()
@@ -715,12 +915,12 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
 				killButton.setEnabled(true);
 				infoButton.setEnabled(true);
 				settingsButton.setEnabled(true);
-				settingsPanel.setVisible(false);
+				settingIn.setVisible(false);
 		    }
 		});
-    }
-	
-    /**
+	}
+
+	/**
      * Create the GUI and show it.  For thread safety,
      * this method should be invoked from the
      * event-dispatching thread.
@@ -758,21 +958,6 @@ public class DeadByDaylight_Decider extends JFrame implements ActionListener {
                 createAndShowGUI();
             }
         });
-	}
-	
-	/**
-	 * I am unsure why I have this in here along with the other actionPerformed states in the method addComponentsToPane().
-	 * I know this method is required because of the implements ActionListener, but I have yet to rework the other actionPerformed statements
-	 * 	 - unless they don't need to be changed and this is really fine.
-	 */
-	@Override
-	public void actionPerformed(ActionEvent act)
-	{
-		survButton.addActionListener(this);
-		randButton.addActionListener(this);
-		killButton.addActionListener(this);
-		infoButton.addActionListener(this);
-		infoCloseButton.addActionListener(this);
 	}
 	
 	public static class Panel extends JPanel

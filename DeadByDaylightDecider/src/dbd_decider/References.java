@@ -1,17 +1,22 @@
 package dbd_decider;
 
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 @SuppressWarnings("serial")
 public class References extends DeadByDaylight_Decider {
 
 	protected static final String APP_NAME = "Dead By Daylight Decider";
-	protected static final String VERSION = "Version 0.9.4";
+	protected static final String VERSION = "Version 0.9.6";
 	protected static final String DIRECTORY = "/assets";
 	protected static final String AUTHOR = "SirBassington";
+	
+	protected static boolean isDebugMode = false;
 	
 	/**
 	 * @param input String of what is hard-coded to be printed into the console
@@ -25,13 +30,91 @@ public class References extends DeadByDaylight_Decider {
 	}
 	
 	/**
-	 * @param path location of file being called.
-	 * @return returns the results whether the image call was successful or not.
+	 * @param errorMessageHandler 
+	 * @param errorType String 'exceptionType' from makeVisuals or createVisuals
+	 * 
+	 * Method for coping error messages to the system clipboard for reporting errors that arise.
+	 */
+	private static void copy(String errorType, String errorMessageHandler)
+	{
+		StringSelection toCopy = new StringSelection(errorType + "\n" + errorMessageHandler);
+		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clipboard.setContents(toCopy, null);
+	}
+	
+	protected static ImageIcon createVisualsSmooth(String path)
+	{
+		ImageIcon result = null;
+		
+		try {
+			result = new ImageIcon(Toolkit.getDefaultToolkit().getClass().getResource(DIRECTORY + path));
+		}
+		catch (Exception toMake)
+		{
+			System.out.println("Failure in createVisualsSmooth()");
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Image handler for creating images and displaying it for anything that IS a JLabel.
+	 * 
+	 * Same function as method below here.
+	 * 
+	 * @param jLabelIn incoming JLabel object
+	 * @param path String of file location
+	 * @param widthIn int pixels in width
+	 * @param heightIn int pixels in height
+	 */
+	protected static void makeVisuals(JLabel jLabelIn, String path, int widthIn, int heightIn)
+	{
+		ImageIcon returnedResult;
+		returnedResult = createVisualsSmooth(path);
+		
+		try {
+			jLabelIn.setIcon(new ImageIcon((returnedResult.getImage()).getScaledInstance(widthIn, heightIn, java.awt.Image.SCALE_SMOOTH)));
+			//System.out.println("Image displayed: " + result);
+		}
+		catch (Exception failedLoad) //Catch error in finding file that matches code path, then catch, log it, and pass to errorManagement()
+		{
+			statusAgent("\nFailed to load: " + returnedResult + "\n");
+			
+			/*
+			 * Obtain the class, method and code line of where the error started to be called from
+			 */
+			String className = Thread.currentThread().getStackTrace()[2].getClassName();
+		    String shortClassName = className.substring(className.lastIndexOf(".") + 1);
+		    String methodName = Thread.currentThread().getStackTrace()[2].getMethodName();
+		    int lineNumber = Thread.currentThread().getStackTrace()[2].getLineNumber();
+		    String fullInfo = shortClassName + "." + methodName + "():" + lineNumber;
+			
+		    /*
+		     * Format Strings to be passed in errorManagement(String, String, String) error logger
+		     */
+		    String exceptionBarrier = "----------------------------------------------------------------\n";
+			String exceptionTitle = "Missing or unexpected asset localization variable.";
+			String exceptionLevel = "This is not a severe issue, the program will not self terminate.\n";
+			String exceptionDetail = "Detailed explanation:\n\nAn issue occured at " + fullInfo + "\nwhile locating or loading the path of:\n" + DIRECTORY +
+					path + "\n" + exceptionBarrier;
+			String exceptionType = "Runtime Error MR-0x2 - Failed Resource Load";
+			
+			returnedResult = new ImageIcon(Toolkit.getDefaultToolkit().getClass().getResource("/assets/missing.png")); //Set missing resource as the missing image when/if this line is reach
+			errorManagement(exceptionTitle, exceptionLevel, exceptionBarrier, exceptionDetail, exceptionType);
+		}
+	}
+	
+	/**
+	 * Image handler for creating images and displaying it for anything that is NOT a JLabel.
 	 * 
 	 * Image handler for creating images and displaying the result.
 	 * If the image is found successfully then the program sets the result as that and returns it to whatever called this method.
-	 * If the image is not found, regardless of missing image, file typo, programming typo or the such result is set to a 'missing'
-	 * 		texture and then the issue is sent to errorManagement(String, String, String).
+	 * If the image is not found, regardless of missing image, file type, programming typo or the such result is set to a 'missing'
+	 * 		texture and then the issue is sent to errorManagement(String, String, String, String).
+	 * 
+	 * @param path location of file being called.
+	 * @return returns the results whether the image call was successful or not.
+	 * @apiNote Do not use for JLabels, they have the above method for them.
 	 */
 	protected static ImageIcon createVisuals(String path)
 	{
@@ -39,58 +122,86 @@ public class References extends DeadByDaylight_Decider {
 		
 		try {
 			result = new ImageIcon(Toolkit.getDefaultToolkit().getClass().getResource(DIRECTORY + path));
-			//System.out.println("Image displayed: " + result);
 		}
-		catch (Exception failedLoad) //Catch error in finding file that matches code path, catch and log it and pass to errorManagement()
+		catch (Exception failedLoad)
 		{
 			statusAgent("\nFailed to load: " + result + "\n");
 			
-			/*
-			 * Obtain the class, method and code line of where the error started to be called from
-			 */
-			String fullClassName = Thread.currentThread().getStackTrace()[2].getClassName();
-		    String className = fullClassName.substring(fullClassName.lastIndexOf(".") + 1);
+			String className = Thread.currentThread().getStackTrace()[2].getClassName();
+		    String shortClassName = className.substring(className.lastIndexOf(".") + 1);
 		    String methodName = Thread.currentThread().getStackTrace()[2].getMethodName();
 		    int lineNumber = Thread.currentThread().getStackTrace()[2].getLineNumber();
-		    String fullInfo = className + "." + methodName + "():" + lineNumber;
-			
-		    /*
-		     * Format Strings to be passed in errorManagement(String, String, String) error logger
-		     */
+		    String fullInfo = shortClassName + "." + methodName + "():" + lineNumber;
+		    
+		    String exceptionBarrier = "-----------------------------------------------------------------------------------\n";
 			String exceptionTitle = "Missing or unexpected asset localization variable.";
-			String exceptionCapability = "This is not a severe issue, the program will not auto-close.\n";
+			String exceptionLevel = "This is not a severe issue, the program will not self terminate.\n";
 			String exceptionDetail = "Detailed explanation:\n\nAn issue occured at " + fullInfo + "\nwhile locating or loading the path of:\n" + DIRECTORY +
-					path + "\n----------------------------------------------------------------\n\nPlease inform SirBassington as the soonest convenience!";
+					path + "\n" + exceptionBarrier;
 			String exceptionType = "Runtime Error MR-0x1 - Failed Resource Load";
 			
 			result = new ImageIcon(Toolkit.getDefaultToolkit().getClass().getResource("/assets/missing.png")); //Set missing resource as the missing image when/if this line is reach
-			errorManagement(exceptionTitle, exceptionCapability, exceptionDetail, exceptionType);
+			errorManagement(exceptionTitle, exceptionLevel, exceptionBarrier, exceptionDetail, exceptionType);
 		}
 		
 		return result;
 	}
 	
 	/**
-	 * @param errorTitle Basic description of issue occurred
+	 * Creates a pop-up window when an error occurs and displays the passed information as an error message
+	 * 
+	 * @param errorTitle Basic description of issue encountered
 	 * @param errorLevel How severe the issue is. Normal errors won't crash the application, if they do this will not work - shouldn't happen anyway
 	 * @param errorDetails Human readable issue of what the program attempted to do/find
-	 * 
-	 * Creates a popup window when an error occurs and displays the passed information as an error log
 	 */
-	protected static void errorManagement(String errorTitle, String errorLevel, String errorDetails, String errorType)
+	protected static void errorManagement(String errorTitle, String errorLevel, String errorBarrier, String errorDetails, String errorType)
 	{
 		JOptionPane optionPane = new JOptionPane();
-		
 		optionPane.setSize(500, 300);
-		//Add Copy button for error reporting
-		String errorMessageHandler = errorTitle + "\n" + errorLevel + "----------------------------------------------------------------\n" + errorDetails;
 		
-	    JOptionPane.showMessageDialog(null, errorMessageHandler, errorType, JOptionPane.ERROR_MESSAGE);
+		String errorMessageHandlerBase = errorTitle + "\n" + errorLevel + errorBarrier + errorDetails;
+		String errorMessageHandler = errorMessageHandlerBase + "\nPlease inform SirBassington as the soonest convenience!";
+		
+		Object[] buttonOptions = {"Copy to clipboard", "Close"};
+		
+		int result = JOptionPane.showOptionDialog(null, errorMessageHandler, errorType, JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttonOptions, null);
+		
+		if (result == JOptionPane.YES_OPTION)
+		{
+			copy(errorType, errorMessageHandlerBase);
+			JOptionPane.showMessageDialog(null, "Copied to clipboard!");
+		}
 	}
 	
-	/**
-	 * This remaining are the older version history of this program which I have not really backed up. As of posting to gitHub on March 9th, 2020, this will no longer be continued on here.
+	/*
+	 * Version 0.9.6
+	 * #############
+	 * 
+	 * + No longer implements actionListener, achieves same goal with interact-able features.
+	 * + Added isDebugMode boolean in this file for use elsewhere. Removes making diagnostic IDE code from trying to work when program is compiled (if it matters).
 	 */
+	
+	/*
+	 * Version 0.9.5
+	 * #############
+	 * 
+	 * + Refined randomizeBoth() loop to have an accurate majority roll basis, typo made it roll 98 times rather than 99 times and make
+	 * 		a biased killer result in the event of a 48-48 tie.
+	 *   *Also updated the number for the random number generator from (10) to (20) just because
+	 * + Added new methods in References for graphical handling in a formal method. JButtons could not be pushed to this structure so
+	 * 		they use to now-old visual creators.
+	 * + Rewrote JLabel visual calls to use above method additions.
+	 * + Reworked addOn code for decideSAddons() and decideKAddons(): minimized killer specific blocks, list creation is now listed once
+	 * 		and amount related values pushed out said killer blocks, eliminated total of 24 duplicate amount graphical code blocks.
+	 *   *Program feels more snappy upon this code rewrite and 'visually hangs' dramatically less, almost no more .
+	 * + Minor error pop-up window tweaks.
+	 *   *New copy to clipboard feature for error pop-up window for easier error reporting due to application not given internet access.
+	 *   *Window size is dependent on the error being called so all messages fit nicely.
+	 * + Rephrased several statusAgent() calls to make debugging slightly more convenient.
+	 * 
+	 * Notes: Killer decisions feel slower than Survivor ones, debugging to find reason.
+	 */
+	
 	/*
 	 * Version 0.9.4
 	 * #############
@@ -98,12 +209,12 @@ public class References extends DeadByDaylight_Decider {
 	 * + Added APP_NAME
 	 * + Documented more code throughout the References, RoundButton and Decisions files.
 	 * + Reworked some References methods to work better or be more efficient for diagnostic purposes.
-	 * + Added settings panel,
+	 * + Added Settings panel,
 	 *   *Accessed by clicking the settingsButton on the main panel.
 	 *   *Brings up an about-like page with basic stuff of the application.
 	 *   *main panel is inaccessible and darkened until the settings panel is closed via the closeSettingsButton button.
 	 * + Changed infoButton and closeInfoButton to form factor of settingButton and closeSettingButton
-	 * + Official UI from DBD added and replaced infoButton and settingButton look, now also are RoundButtons.
+	 * + Official UI from DBD added for and replaced infoButton and settingButton looks, now also are RoundButtons.
 	 */
 	
 	/*
