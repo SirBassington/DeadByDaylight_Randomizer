@@ -19,10 +19,9 @@ public class References extends DeadByDaylight_Decider {
 	protected static boolean isDebugMode = false;
 	
 	/**
-	 * @param input String of what is hard-coded to be printed into the console
+	 * Diagnostic method acting as a glorified System.out.println()
 	 * 
-	 * Diagnostic method for telling what time a certain line of code was reached, prints to console.
-	 * Glorified System.out.println() basically
+	 * @param input String of what is hard-coded to be printed into the console
 	 */
 	protected static void statusAgent(String input)
 	{
@@ -30,10 +29,10 @@ public class References extends DeadByDaylight_Decider {
 	}
 	
 	/**
-	 * @param errorMessageHandler 
-	 * @param errorType String 'exceptionType' from makeVisuals or createVisuals
+	 * Method for copying error messages to the system clipboard for reporting errors that arise.
 	 * 
-	 * Method for coping error messages to the system clipboard for reporting errors that arise.
+	 * @param errorMessageHandler 
+	 * @param errorType String 'exceptionType' from makeVisuals() or createVisuals()
 	 */
 	private static void copy(String errorType, String errorMessageHandler)
 	{
@@ -42,7 +41,10 @@ public class References extends DeadByDaylight_Decider {
 		clipboard.setContents(toCopy, null);
 	}
 	
-	protected static ImageIcon createVisualsSmooth(String path)
+	/*
+	 * Helper class for makeVisuals() - Do not plug here directly, use makeVisuals() for handling images, else use createVisuals()
+	 */
+	protected static ImageIcon createVisualsHelper(String path)
 	{
 		ImageIcon result = null;
 		
@@ -55,6 +57,20 @@ public class References extends DeadByDaylight_Decider {
 		}
 		
 		return result;
+	}
+	
+	/*
+	 * Recall where an issue occurred. formatted as Class.methodName():Line#
+	 */
+	protected static String threadIndicator()
+	{
+		String className = Thread.currentThread().getStackTrace()[3].getClassName();
+	    String shortClassName = className.substring(className.lastIndexOf(".") + 1);
+	    String methodName = Thread.currentThread().getStackTrace()[3].getMethodName();
+	    int lineNumber = Thread.currentThread().getStackTrace()[3].getLineNumber();
+	    String fullInfo = shortClassName + "." + methodName + "():" + lineNumber;
+	    
+	    return fullInfo;
 	}
 	
 	/**
@@ -70,32 +86,23 @@ public class References extends DeadByDaylight_Decider {
 	protected static void makeVisuals(JLabel jLabelIn, String path, int widthIn, int heightIn)
 	{
 		ImageIcon returnedResult;
-		returnedResult = createVisualsSmooth(path);
+		returnedResult = createVisualsHelper(path);
 		
 		try {
 			jLabelIn.setIcon(new ImageIcon((returnedResult.getImage()).getScaledInstance(widthIn, heightIn, java.awt.Image.SCALE_SMOOTH)));
-			//System.out.println("Image displayed: " + result);
 		}
 		catch (Exception failedLoad) //Catch error in finding file that matches code path, then catch, log it, and pass to errorManagement()
 		{
-			statusAgent("\nFailed to load: " + returnedResult + "\n");
-			
-			/*
-			 * Obtain the class, method and code line of where the error started to be called from
-			 */
-			String className = Thread.currentThread().getStackTrace()[2].getClassName();
-		    String shortClassName = className.substring(className.lastIndexOf(".") + 1);
-		    String methodName = Thread.currentThread().getStackTrace()[2].getMethodName();
-		    int lineNumber = Thread.currentThread().getStackTrace()[2].getLineNumber();
-		    String fullInfo = shortClassName + "." + methodName + "():" + lineNumber;
-			
-		    /*
-		     * Format Strings to be passed in errorManagement(String, String, String) error logger
-		     */
+			if (isDebugMode == true)
+			{
+				statusAgent("\nFailed to load: " + returnedResult + "\n");
+			}
+				
+		    //Format Strings to be passed in errorManagement(String, String, String) error logger
 		    String exceptionBarrier = "----------------------------------------------------------------\n";
 			String exceptionTitle = "Missing or unexpected asset localization variable.";
 			String exceptionLevel = "This is not a severe issue, the program will not self terminate.\n";
-			String exceptionDetail = "Detailed explanation:\n\nAn issue occured at " + fullInfo + "\nwhile locating or loading the path of:\n" + DIRECTORY +
+			String exceptionDetail = "Detailed explanation:\n\nAn issue occured at " + threadIndicator() + "\nwhile locating or loading the path of:\n" + DIRECTORY +
 					path + "\n" + exceptionBarrier;
 			String exceptionType = "Runtime Error MR-0x2 - Failed Resource Load";
 			
@@ -125,18 +132,15 @@ public class References extends DeadByDaylight_Decider {
 		}
 		catch (Exception failedLoad)
 		{
-			statusAgent("\nFailed to load: " + result + "\n");
-			
-			String className = Thread.currentThread().getStackTrace()[2].getClassName();
-		    String shortClassName = className.substring(className.lastIndexOf(".") + 1);
-		    String methodName = Thread.currentThread().getStackTrace()[2].getMethodName();
-		    int lineNumber = Thread.currentThread().getStackTrace()[2].getLineNumber();
-		    String fullInfo = shortClassName + "." + methodName + "():" + lineNumber;
+			if (isDebugMode == true)
+			{
+				statusAgent("\nFailed to load: " + result + "\n");
+			}
 		    
 		    String exceptionBarrier = "-----------------------------------------------------------------------------------\n";
 			String exceptionTitle = "Missing or unexpected asset localization variable.";
 			String exceptionLevel = "This is not a severe issue, the program will not self terminate.\n";
-			String exceptionDetail = "Detailed explanation:\n\nAn issue occured at " + fullInfo + "\nwhile locating or loading the path of:\n" + DIRECTORY +
+			String exceptionDetail = "Detailed explanation:\n\nAn issue occured at " + threadIndicator() + "\nwhile locating or loading the path of:\n" + DIRECTORY +
 					path + "\n" + exceptionBarrier;
 			String exceptionType = "Runtime Error MR-0x1 - Failed Resource Load";
 			
@@ -177,14 +181,22 @@ public class References extends DeadByDaylight_Decider {
 	 * Version 0.9.6
 	 * #############
 	 * 
-	 * + No longer implements actionListener, achieves same goal with interact-able features.
-	 * + Added isDebugMode boolean in this file for use elsewhere. Removes making diagnostic IDE code from trying to work when program is compiled (if it matters).
+	 * + Rewrote pathing for decision making to now incorporate Settings options, by default program starts with the default option set.
+	 *   *Options in the settings panel now affect how the program runs through decision making, fully customizable in pathing, default holds pre v0.9.6 logic in a new format.
+	 * + Fixed several bugs regarding recursive code (addons list most notably)
+	 * + New icon for randButton and deletion of unused assets.
+	 * + Fixed some while loop logic issues that prevented it form running the correct amount of times for accurate decisions.
+	 * + Modified some Fonts and added or removed others as needed.
+	 * + Removed some more legacy code for handling the main panel (JFrame) and updated to show a background image similar to other components in the application.
+	 * + Formalized a method for recalling where an issue occurred by tracing the thread that reaches threadIndicator().
 	 */
 	
 	/*
 	 * Version 0.9.5
 	 * #############
 	 * 
+	 * + No longer implements actionListener, achieves same goal with interact-able features.
+	 * + Added isDebugMode boolean in this file for use elsewhere. Removes making diagnostic IDE code from trying to work when program is compiled (if it matters).
 	 * + Refined randomizeBoth() loop to have an accurate majority roll basis, typo made it roll 98 times rather than 99 times and make
 	 * 		a biased killer result in the event of a 48-48 tie.
 	 *   *Also updated the number for the random number generator from (10) to (20) just because

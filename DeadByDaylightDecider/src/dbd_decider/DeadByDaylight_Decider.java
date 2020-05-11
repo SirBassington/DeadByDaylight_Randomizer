@@ -1,6 +1,5 @@
 package dbd_decider;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import java.awt.BorderLayout;
@@ -9,7 +8,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -17,7 +15,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -40,7 +37,7 @@ public class DeadByDaylight_Decider extends JFrame {
 	 * Everything will be documented for the sake of helping observers understand what's happening when and where and for good programming procedures.
 	 */
 	static JLabel background, charPortrait, charPortraitBackground, charPortraitOverlay, charShadow, itemPower, addOn1, addOn2, offering,
-		perk1, perk2, perk3, perk4, infoBoxArea, rightPaneSummary, summary, infoLabel = new JLabel();
+		perk1, perk2, perk3, perk4, infoBoxArea, rightPaneSummary, infoLabel = new JLabel();
 	
 	static String baseChoice, charType, itemChoice, finalChar, finalAddOn1, finalAddOn2, finalOffering, finalPerk1, finalPerk2, finalPerk3,
 		finalPerk4, finalToolbox, finalMedkit, finalFlashlight, finalMap, finalKey = null;
@@ -50,29 +47,22 @@ public class DeadByDaylight_Decider extends JFrame {
 	
 	static JButton survButton, randButton, killButton, infoButton, infoCloseButton, settingsButton, settingsCloseButton;
 
-	static JCheckBox itemCheck, addonCheck, offeringCheck = new JCheckBox();
-	static JRadioButton radioDefault, radioP1, radioP2, radioP3, radioP4 = new JRadioButton();
+	static JCheckBox itemCheck, addOnCheck, offeringCheck = new JCheckBox();
+	static JRadioButton radioDefault, radioAD0, radioAD1, radioAD2, radioP0, radioP1, radioP2, radioP3, radioP4 = new JRadioButton();
 	static BufferedImage image;
 	
 	static Font sulB = new Font("Segoe UI Light", Font.BOLD, 24);
-	static Font sulBS = new Font("Segoe UI Light", Font.BOLD, 20);
-	static Font emeR = new Font("Segoe UI Light", Font.BOLD, 14);
 	static Font verD = new Font("Verdana", Font.BOLD, 20);
+	static Font verDItalic = new Font("Verdana", Font.ITALIC, 20);
 	static Font verDTitle = new Font("Verdana", Font.PLAIN, 30);
 	
-	//Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
-	//map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
-	//font = font.deriveFont(map);
-	
-	//Map<TextAttribute, Integer> fontAttributes = new HashMap<TextAttribute, Integer>();
-	//fontAttributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
 	static Map<TextAttribute, Object> fontAttributes = new Hashtable<TextAttribute, Object>();
 	
-	//static Font verDLargeUnderline = new Font("Verdana", Font.PLAIN, 30);
-	static Font verDLarge = new Font("Verdana", Font.PLAIN, 40);
+	static Font verDLarge = new Font("Verdana", Font.BOLD, 40);
 	static Color whiteF = Color.decode("#ffffff");
+	static Color whiteD9 = Color.decode("#d9d9d9");
 	static Color emergencyR = Color.decode("#ff1a1a");
-	static Color darkTranparency = new Color(12, 12, 12, 200);
+	static Color darkTranparency = new Color(12, 12, 12, 230);
 	
 	static int width = 1600, height = 900;
 	
@@ -85,7 +75,6 @@ public class DeadByDaylight_Decider extends JFrame {
 		 * The following JPanel stuff are preparations for all the graphical components in the program.
 		 * They help determine sizes for each JPanel regarding their parent container.
 		 */
-        //Horizontal JPanels - aka Trio
 		JPanel dbdPanel = new JPanel()
 		{
 			@Override
@@ -118,7 +107,6 @@ public class DeadByDaylight_Decider extends JFrame {
         		return new Dimension(width / 5, height);
         	}
         };
-        //Vertical middleStrip JPanels - aka centeredPanes
         JPanel buttonLayer = new JPanel()
         {
         	@Override
@@ -263,14 +251,14 @@ public class DeadByDaylight_Decider extends JFrame {
         dbdPanel.setOpaque(false);
         
         /**
-         * This is used to make JPanels overlap eachother in layers with the topmost being added first the then each one below it being the next layer down.
+         * This is used to make JPanels overlap each other in layers with the topmost being added first the then each one below it being the next layer down.
          * This may not be the best approach to having multiple 'windows' in a program but I find it best to go ahead declare them like this for learning purposes.
          */
         JPanel mergePanel = new JPanel();
         mergePanel.setOpaque(false);
         mergePanel.setLayout(new OverlayLayout(mergePanel));
         mergePanel.add(settingsPanel, BorderLayout.CENTER);
-        mergePanel.add(infoPanel, BorderLayout.CENTER); //Add transparent first
+        mergePanel.add(infoPanel, BorderLayout.CENTER);
         mergePanel.add(dbdPanel, BorderLayout.CENTER);
         pane.setLayout(new BorderLayout());
         pane.add(mergePanel);
@@ -283,14 +271,13 @@ public class DeadByDaylight_Decider extends JFrame {
         settP.gridx = 0;
         settP.gridy = 0;
         settP.weighty = 1;
-        JLabel settingsTitle = new JLabel("<html>Settings - Work In Progress section<br>Does nothing at the moment");
+        JLabel settingsTitle = new JLabel("<html>Settings");
         settingsTitle.setFont(verDLarge);
         settingsTitle.setForeground(whiteF);
         settingsPanel.add(settingsTitle, settP);
         
         settP.gridy++;
         JLabel settingsPurpleBar = new JLabel();
-        //settingsPurpleBar.setIcon(new ImageIcon(((References.createVisuals("/nonDBDArtwork/purpleBar.png")).getImage()).getScaledInstance(400, 3, java.awt.Image.SCALE_SMOOTH)));
         References.makeVisuals(settingsPurpleBar, "/nonDBDArtwork/purpleBar.png", 950, 3);
         settingsPanel.add(settingsPurpleBar, settP);
         
@@ -341,12 +328,19 @@ public class DeadByDaylight_Decider extends JFrame {
         	optionSet.add(titleA, opSet);
         }
         opSet.gridy++;
+        {
+        	JLabel titleNote = new JLabel("Can have nothing chosen when rolled");
+        	titleNote.setOpaque(false);
+        	titleNote.setFont(verDItalic);
+        	titleNote.setForeground(whiteF);
+        	optionSet.add(titleNote, opSet);
+        }
+        opSet.gridy++;
         opSet.gridwidth = 1;
         opSet.gridx = 0;
         opSet.insets = new Insets(5, 40, 0, 0);
         {
         	itemCheck = new JCheckBox("Items", false);
-        	//itemCheck.setOpaque(false);
         	itemCheck.setBackground(darkTranparency);
         	itemCheck.setFont(verD);
         	itemCheck.setForeground(whiteF);
@@ -355,12 +349,12 @@ public class DeadByDaylight_Decider extends JFrame {
         }
         opSet.gridx++;
         {
-        	addonCheck = new JCheckBox("Killer/Survivor Add-ons", false);
-        	addonCheck.setBackground(darkTranparency);
-        	addonCheck.setFont(verD);
-        	addonCheck.setForeground(whiteF);
-        	addonCheck.setFocusPainted(false);
-            optionSet.add(addonCheck, opSet);
+        	addOnCheck = new JCheckBox("Add-Ons", false);
+        	addOnCheck.setBackground(darkTranparency);
+        	addOnCheck.setFont(verD);
+        	addOnCheck.setForeground(whiteF);
+        	addOnCheck.setFocusPainted(false);
+            optionSet.add(addOnCheck, opSet);
         }
         opSet.gridx++;
         {
@@ -374,6 +368,57 @@ public class DeadByDaylight_Decider extends JFrame {
         settingsPanel.add(optionSet, settP);
         
         /*
+         * addOnSet Panel zone
+         */
+        settP.gridy++;
+        JPanel addOnSet = new JPanel();
+        addOnSet.setOpaque(false);
+        addOnSet.setLayout(new GridBagLayout());
+        GridBagConstraints aoSet = new GridBagConstraints();
+        
+        aoSet.gridy = 0;
+        aoSet.gridwidth = 4;
+        aoSet.anchor = GridBagConstraints.CENTER;
+        {
+        	JLabel titleB = new JLabel("Number of Add-ons to Decide");
+        	titleB.setOpaque(false);
+        	titleB.setFont(verDLargeUnderline);
+        	titleB.setForeground(whiteF);
+        	addOnSet.add(titleB, aoSet);
+        }
+        aoSet.gridy++;
+        aoSet.gridx = 0;
+        aoSet.gridwidth = 1;
+        aoSet.insets = new Insets(5, 130, 0, 0);
+        {
+        	radioAD0 = new JRadioButton("0");
+        	radioAD0.setBackground(darkTranparency);
+        	radioAD0.setFont(verD);
+        	radioAD0.setForeground(whiteF);
+        	radioAD0.setFocusPainted(false);
+        	addOnSet.add(radioAD0, aoSet);
+        }
+        aoSet.insets = new Insets(5, 36, 0, 0);
+        aoSet.gridx++;
+        {
+        	radioAD1 = new JRadioButton("1");
+        	radioAD1.setBackground(darkTranparency);
+        	radioAD1.setFont(verD);
+        	radioAD1.setForeground(whiteF);
+        	radioAD1.setFocusPainted(false);
+        	addOnSet.add(radioAD1, aoSet);
+        }
+        aoSet.gridx++;{
+        	radioAD2 = new JRadioButton("2");
+        	radioAD2.setBackground(darkTranparency);
+        	radioAD2.setFont(verD);
+        	radioAD2.setForeground(whiteF);
+        	radioAD2.setFocusPainted(false);
+        	addOnSet.add(radioAD2, aoSet);
+        }
+        settingsPanel.add(addOnSet, settP);
+        
+        /*
          * perkSet Panel zone
          */
         settP.gridy++;
@@ -383,19 +428,28 @@ public class DeadByDaylight_Decider extends JFrame {
         GridBagConstraints peSet = new GridBagConstraints();
         
         peSet.gridy = 0;
-        peSet.gridwidth = 5;
+        peSet.gridwidth = 6;
         peSet.anchor = GridBagConstraints.CENTER;
         {
-        	JLabel titleB = new JLabel("Number of Perks to Decide");
-        	titleB.setOpaque(false);
-        	titleB.setFont(verDLargeUnderline);
-        	titleB.setForeground(whiteF);
-        	perkSet.add(titleB, peSet);
+        	JLabel titleC = new JLabel("Number of Perks to Decide");
+        	titleC.setOpaque(false);
+        	titleC.setFont(verDLargeUnderline);
+        	titleC.setForeground(whiteF);
+        	perkSet.add(titleC, peSet);
         }
         peSet.gridy++;
         peSet.gridx = 0;
         peSet.gridwidth = 1;
-        peSet.insets = new Insets(5, 50, 0, 0);
+        peSet.insets = new Insets(5, 36, 0, 0);
+        {
+        	radioP0 = new JRadioButton("0");
+        	radioP0.setBackground(darkTranparency);
+        	radioP0.setFont(verD);
+        	radioP0.setForeground(whiteF);
+        	radioP0.setFocusPainted(false);
+        	perkSet.add(radioP0, peSet);
+        }
+        peSet.gridx++;
         {
         	radioP1 = new JRadioButton("1");
         	radioP1.setBackground(darkTranparency);
@@ -404,8 +458,7 @@ public class DeadByDaylight_Decider extends JFrame {
         	radioP1.setFocusPainted(false);
         	perkSet.add(radioP1, peSet);
         }
-        peSet.gridx++;
-        {
+        peSet.gridx++;{
         	radioP2 = new JRadioButton("2");
         	radioP2.setBackground(darkTranparency);
         	radioP2.setFont(verD);
@@ -527,7 +580,7 @@ public class DeadByDaylight_Decider extends JFrame {
         
         rightPaneSummary = new JLabel();
         rightPaneSummary.setFont(verD);
-        rightPaneSummary.setForeground(whiteF);
+        rightPaneSummary.setForeground(whiteD9);
         rightStrip.add(rightPaneSummary, r);
         
         //Setting up Vertical JPanels inside of middleStrip
@@ -728,11 +781,6 @@ public class DeadByDaylight_Decider extends JFrame {
         perk4 = new JLabel();
         perkLayer4.add(perk4);
         
-        summary = new JLabel();
-        summary.setFont(sulB);
-        summary.setForeground(whiteF);
-        legacySummaryLayer.add(summary);
-        
         //Start the application with settingsPanel and infoPanel already disabled in sight
         settingsPanel.setVisible(false);
         infoPanel.setVisible(false);
@@ -755,12 +803,21 @@ public class DeadByDaylight_Decider extends JFrame {
         		if (radioDefault.isSelected() == true)
         		{
         			itemCheck.setSelected(false);
-        			addonCheck.setSelected(false);
+        			addOnCheck.setSelected(false);
         			offeringCheck.setSelected(false);
+        			radioAD0.setSelected(false);
+        			radioAD1.setSelected(false);
+        			radioAD2.setSelected(false);
+        			radioP0.setSelected(false);
         			radioP1.setSelected(false);
         			radioP2.setSelected(false);
         			radioP3.setSelected(false);
         			radioP4.setSelected(false);
+        		}
+        		if (radioDefault.isSelected() == false)
+        		{
+        			radioAD0.setSelected(true);
+        			radioP0.setSelected(true);
         		}
 			}
         });
@@ -772,12 +829,16 @@ public class DeadByDaylight_Decider extends JFrame {
         		radioDefault.setSelected(false);
 			}
         });
-        addonCheck.addActionListener(new ActionListener()
+        addOnCheck.addActionListener(new ActionListener()
         {
         	@Override
 		    public void actionPerformed(ActionEvent act)
 			{
         		radioDefault.setSelected(false);
+        		itemCheck.setSelected(true);
+        		radioAD0.setSelected(false);
+        		radioAD1.setSelected(true);
+        		radioAD2.setSelected(false);
 			}
         });
         offeringCheck.addActionListener(new ActionListener()
@@ -788,12 +849,59 @@ public class DeadByDaylight_Decider extends JFrame {
         		radioDefault.setSelected(false);
 			}
         });
+        radioAD0.addActionListener(new ActionListener()
+        {
+        	@Override
+		    public void actionPerformed(ActionEvent act)
+			{
+        		radioDefault.setSelected(false);
+        		radioAD1.setSelected(false);
+        		radioAD2.setSelected(false);
+			}
+        });
+        radioAD1.addActionListener(new ActionListener()
+        {
+        	@Override
+		    public void actionPerformed(ActionEvent act)
+			{
+        		radioDefault.setSelected(false);
+        		itemCheck.setSelected(true);
+        		addOnCheck.setSelected(true);
+        		radioAD0.setSelected(false);
+        		radioAD2.setSelected(false);
+			}
+        });
+        radioAD2.addActionListener(new ActionListener()
+        {
+        	@Override
+		    public void actionPerformed(ActionEvent act)
+			{
+        		radioDefault.setSelected(false);
+        		itemCheck.setSelected(true);
+        		addOnCheck.setSelected(true);
+        		radioAD0.setSelected(false);
+        		radioAD1.setSelected(false);
+			}
+        });
+        radioP0.addActionListener(new ActionListener()
+        {
+        	@Override
+		    public void actionPerformed(ActionEvent act)
+			{
+        		radioDefault.setSelected(false);
+    			radioP1.setSelected(false);
+    			radioP2.setSelected(false);
+    			radioP3.setSelected(false);
+    			radioP4.setSelected(false);
+			}
+        });
         radioP1.addActionListener(new ActionListener()
         {
         	@Override
 		    public void actionPerformed(ActionEvent act)
 			{
         		radioDefault.setSelected(false);
+    			radioP0.setSelected(false);
     			radioP2.setSelected(false);
     			radioP3.setSelected(false);
     			radioP4.setSelected(false);
@@ -805,6 +913,7 @@ public class DeadByDaylight_Decider extends JFrame {
 		    public void actionPerformed(ActionEvent act)
 			{
         		radioDefault.setSelected(false);
+    			radioP0.setSelected(false);
     			radioP1.setSelected(false);
     			radioP3.setSelected(false);
     			radioP4.setSelected(false);
@@ -816,6 +925,7 @@ public class DeadByDaylight_Decider extends JFrame {
 		    public void actionPerformed(ActionEvent act)
 			{
         		radioDefault.setSelected(false);
+    			radioP0.setSelected(false);
     			radioP1.setSelected(false);
     			radioP2.setSelected(false);
     			radioP4.setSelected(false);
@@ -827,6 +937,7 @@ public class DeadByDaylight_Decider extends JFrame {
 		    public void actionPerformed(ActionEvent act)
 			{
         		radioDefault.setSelected(false);
+    			radioP0.setSelected(false);
     			radioP1.setSelected(false);
     			radioP2.setSelected(false);
     			radioP3.setSelected(false);
@@ -927,13 +1038,11 @@ public class DeadByDaylight_Decider extends JFrame {
      */
     private static void createAndShowGUI()
     {
-    	Panel background = new Panel();
         JFrame frame = new JFrame(References.APP_NAME + " " + References.VERSION);
-        frame.setContentPane(background);
         
-        //frame.setContentPane(background);
         frame.setResizable(false);
-        frame.setSize(1600, 900);
+        frame.setSize(width, height);
+        frame.setContentPane(new JLabel(References.createVisuals("/campfire.jpg")));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         frame.pack();
@@ -959,29 +1068,4 @@ public class DeadByDaylight_Decider extends JFrame {
             }
         });
 	}
-	
-	public static class Panel extends JPanel
-	{
-        public Panel()
-        {
-            try {
-                image = ImageIO.read(getClass().getResource("/assets/campfire.jpg"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public Dimension getPreferredSize()
-        {
-			return image == null ? super.getPreferredSize() : new Dimension(image.getWidth(), image.getHeight());
-        }
-
-        @Override
-        public void paintComponent(Graphics g)
-        {
-            super.paintComponent(g);
-            g.drawImage(image, 0, 0, this);
-        }
-    }
 }

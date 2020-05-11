@@ -13,14 +13,14 @@ public class Decisions extends DeadByDaylight_Decider {
 	
 	protected static void detector()
 	{
-		//Reset choices in the event another selection is run without closing the application
+		//Time counter for debugging, tells the time (24 hour scale) for when a selection was started.
 		if (References.isDebugMode == true)
 		{
 			LocalDateTime now = LocalDateTime.now();
 			DateTimeFormatter time = DateTimeFormatter.ofPattern("HH:mm:ss");
 			References.statusAgent(time.format(now) + " selections:");
 		}
-		
+		//Reset and clear previous choices in the event another selection is run without closing the application.
 		baseChoice = null;
 		charType = null;
 		itemChoice = null;
@@ -42,19 +42,111 @@ public class Decisions extends DeadByDaylight_Decider {
         References.makeVisuals(perk2, "/blank.png", 200, 200);
         References.makeVisuals(perk3, "/blank.png", 200, 200);
         References.makeVisuals(perk4, "/blank.png", 200, 200);
-		
-		if (isSurvivor == true)
-		{
-			randomizeSurvivor();
-		}
-		if (isKiller == true)
-		{
-			randomizeKiller();
-		}
-		if (isUndecided == true)
-		{
-			randomizeBoth();
-		}
+        
+        if (radioDefault.isSelected() == true)
+        {
+        	int amountP = new Random().nextInt(4); //amountP -> Perks from 0 to 4
+        	int amountA = new Random().nextInt(3); //amountA -> Addons from 0 to 2
+        	
+        	if (isUndecided == true)
+    		{
+    			randomizeBoth();
+    		}
+        	if (isSurvivor == true)
+    		{
+    			randomizeSurvivor();
+    			decideItems();
+    			if (itemChoice != null)
+    			{
+    				decideSAddons(amountA);
+    			}
+    			offerings();
+    			survivorPerks(amountP);
+    		}
+    		if (isKiller == true)
+    		{
+    			randomizeKiller();
+    			decideKAddons(amountA);
+    			offerings();
+    			killerPerks(amountP);
+    		}
+        }
+        else
+        {
+        	if (isUndecided == true)
+    		{
+    			randomizeBoth();
+    		}
+        	if (isSurvivor == true)
+    		{
+    			randomizeSurvivor();
+    			if (itemCheck.isSelected() == true)
+    	        {
+    				decideItems();
+    	        }
+    	        if (offeringCheck.isSelected() == true)
+    	        {
+    	        	offerings();
+    	        }
+    	        if (radioAD1.isSelected() == true && itemChoice != null)
+    	        {
+    	        	decideSAddons(1);
+    	        }
+    	        if (radioAD2.isSelected() == true && itemChoice != null)
+    	        {
+    	        	decideSAddons(2);
+    	        }
+    	        if (radioP1.isSelected() == true)
+    	        {
+    	        	survivorPerks(0);
+    	        }
+    	        if (radioP2.isSelected() == true)
+    	        {
+    	        	survivorPerks(1);
+    	        }
+    	        if (radioP3.isSelected() == true)
+    	        {
+    	        	survivorPerks(2);
+    	        }
+    	        if (radioP4.isSelected() == true)
+    	        {
+    	        	survivorPerks(3);
+    	        }
+    		}
+    		if (isKiller == true)
+    		{
+    			randomizeKiller();
+    	        if (offeringCheck.isSelected() == true)
+    	        {
+    	        	offerings();
+    	        }
+    	        if (radioAD1.isSelected() == true)
+    	        {
+    	        	decideKAddons(1);
+    	        }
+    	        if (radioAD2.isSelected() == true)
+    	        {
+    	        	decideKAddons(2);
+    	        }
+    	        if (radioP1.isSelected() == true)
+    	        {
+    	        	killerPerks(0);
+    	        }
+    	        if (radioP2.isSelected() == true)
+    	        {
+    	        	killerPerks(1);
+    	        }
+    	        if (radioP3.isSelected() == true)
+    	        {
+    	        	killerPerks(2);
+    	        }
+    	        if (radioP4.isSelected() == true)
+    	        {
+    	        	killerPerks(3);
+    	        }
+    		}
+        }
+        conclusionText();
 	}
 	
 	/**
@@ -90,15 +182,14 @@ public class Decisions extends DeadByDaylight_Decider {
 			References.statusAgent("Survivor and Killer pulls respectively: " + survivor + " & " +  killer);
 		}
 		
+		isUndecided = false;
 		if (survivor > killer)
 		{
 			isSurvivor = true;
-			randomizeSurvivor();
 		}
 		else
 		{
 			isKiller = true;
-			randomizeKiller();
 		}
 	}
 	
@@ -120,7 +211,6 @@ public class Decisions extends DeadByDaylight_Decider {
 
 		charPortraitScale(finalChar);
 		
-		decideItems();
         return finalChar;
 	}
 	
@@ -148,7 +238,6 @@ public class Decisions extends DeadByDaylight_Decider {
 		charPortraitScale(finalChar);
 		itemPowerScale(charType, power);
 
-		decideKAddons();
 		return finalChar;
 	}
 	
@@ -205,25 +294,19 @@ public class Decisions extends DeadByDaylight_Decider {
 			itemChoice = null;
 		}
 		
+		if (References.isDebugMode == true)
+		{
+			References.statusAgent("decideItems() -> Item chosen: " + itemChoice);
+		}
+		
 		if (itemChoice != null)
 		{
 			itemPowerScale(charType, itemChoice);
 		}
-		
-		if (baseChoice != "None")
-		{
-			decideSAddons();
-		}
-		else
-		{
-			offerings();
-		}
 	}
 	
-	private static void decideSAddons()
+	private static void decideSAddons(int amount)
 	{
-		int amount = new Random().nextInt(3); //3 choices: 0, 1, or 2 addons
-		
 		if (References.isDebugMode == true)
 		{
 			References.statusAgent("decideSAddons() -> Number of addons chosen: " + amount);
@@ -289,14 +372,10 @@ public class Decisions extends DeadByDaylight_Decider {
 			
 			addonScale(charType, baseChoice, finalAddOn1, finalAddOn2);
 		}
-		
-		offerings();
 	}
 	
-	private static void decideKAddons()
-	{
-		int amount = new Random().nextInt(3);  //3 choices: 0, 1, or 2 addons
-		
+	private static void decideKAddons(int amount)
+	{	
 		if (References.isDebugMode == true)
 		{
 		References.statusAgent("decideSAddons() -> Number of addons chosen: " + amount);
@@ -475,7 +554,6 @@ public class Decisions extends DeadByDaylight_Decider {
 		}
 		
 		itemChoice = null;
-		offerings();
 	}
 	
 	/**
@@ -502,14 +580,13 @@ public class Decisions extends DeadByDaylight_Decider {
 				"Clear Reagent", "Faint Reagent", "Hazy Reagent", "Murky Reagent", "Bloody Party Streamers"};
 		
 		//Choose whether an Offering will be used or not
-		int count = 1;
+		int count = 0;
 		int shouldDecideOffering = 0;
 		int shouldNotDecideOffering = 0;
 		
-		//The loop
 		while (count < 99)
 		{
-			int rand = new Random().nextInt(10);
+			int rand = new Random().nextInt(20);
 			if (rand % 2 == 0)
 			{
 				shouldDecideOffering++;
@@ -521,13 +598,14 @@ public class Decisions extends DeadByDaylight_Decider {
 		if (shouldDecideOffering > shouldNotDecideOffering)
 		{
 			//Decide if a side-unique or shared Offering should be used.
-			int roll = 1;
+			int roll = 0;
 			int chooseUniqueOfferingPool = 0;
 			int chooseSharedOfferingPool = 0;
 			
 			while (roll <= 99)
 			{
-				int rand = new Random().nextInt(10);
+				int rand = new Random().nextInt(20);
+				
 				if (rand % 2 == 0)
 				{
 					chooseUniqueOfferingPool++;
@@ -577,21 +655,13 @@ public class Decisions extends DeadByDaylight_Decider {
 		{
 			References.statusAgent("offerings() -> Offering chosen: " + finalOffering);
 		}
-
-        if (charType == "survivor")
-        {
-        	survivorPerks();
-        }
-        else
-        {
-        	killerPerks();
-        }
 	}
 	
 	/**
 	 * Chooses what perks will be chosen between 0 to 4.
+	 * @param selectedPerkAmount 
 	 */
-	private static void survivorPerks()
+	private static void survivorPerks(int amount)
 	{
 		List<String> perks = new ArrayList<String>();
 		perks.add("Ace In The Hole");perks.add("Adrenaline");perks.add("Aftercare");perks.add("Alert");perks.add("Autodidact");perks.add("Any Means Necessary");perks.add("Baby Sitter");
@@ -604,8 +674,6 @@ public class Decisions extends DeadByDaylight_Decider {
 		perks.add("Slippery Meat");perks.add("Small Game");perks.add("Sole Survivor");perks.add("Solidarity");perks.add("Spine Chill");perks.add("Sprint Burst");perks.add("Stake Out");perks.add("Streetwise");
 		perks.add("Technician");perks.add("Tenacity");perks.add("This Is Not Happening");perks.add("Unbreakable");perks.add("Up The Ante");perks.add("Urban Evasion");perks.add("Vigil");perks.add("Wake Up");
 		perks.add("We'll Make It");perks.add("We're Gonna Live Forever");perks.add("Windows Of Opportunity");
-		
-		int amount = new Random().nextInt(4);
 		
 		if (References.isDebugMode == true)
 		{
@@ -642,13 +710,12 @@ public class Decisions extends DeadByDaylight_Decider {
 		}
 		
 		perkScale(charType, finalPerk1, finalPerk2, finalPerk3, finalPerk4);
-		conclusionText();
 	}
 
 	/**
 	 * Chooses what perks will be chosen between 0 to 4.
 	 */
-	private static void killerPerks()
+	private static void killerPerks(int amount)
 	{
 		List<String> perks = new ArrayList<String>();
 		perks.add("A Nurse's Calling");perks.add("Agitation");perks.add("Bamboozle");perks.add("Barbecue And Chilli");perks.add("Beast Of Prey");perks.add("Bitter Murmur");perks.add("Blood Echo");
@@ -661,8 +728,6 @@ public class Decisions extends DeadByDaylight_Decider {
 		perks.add("Save The Best For Last");perks.add("Shadowborn");perks.add("Sloppy Butcher");perks.add("Spies From The Shadows");perks.add("Spirit Fury");perks.add("Stridor");perks.add("Surge");
 		perks.add("Surveillance");perks.add("Territorial Imperative");perks.add("Thanatophobia");perks.add("Thrilling Tremors");perks.add("Tinkerer");perks.add("Unnerving Presence");perks.add("Unrelenting");
 		perks.add("Whispers");
-		
-		int amount = new Random().nextInt(4);
 		
 		if (References.isDebugMode == true)
 		{
@@ -699,7 +764,6 @@ public class Decisions extends DeadByDaylight_Decider {
 		}
 		
 		perkScale(charType, finalPerk1, finalPerk2, finalPerk3, finalPerk4);
-		conclusionText();
 	}
 	
 	/**
@@ -708,7 +772,7 @@ public class Decisions extends DeadByDaylight_Decider {
 	private static void charPortraitScale(String name)
 	{
 		String shadowName = name + " Shadow";
-		References.makeVisuals(charPortraitBackground, "/nonDBDArtwork/charPortraitBackgroundOrange.png", 220, 320);
+		References.makeVisuals(charPortraitBackground, "/nonDBDArtwork/purpleRectangleTall.png", 220, 320);
 		References.makeVisuals(charPortrait, "/characters/" + name + ".png", 220, 320);
 		References.makeVisuals(charPortraitOverlay, "/nonDBDArtwork/charPortraitOverlay.png", 220, 320);
 		References.makeVisuals(charShadow, "/characters/" + shadowName + ".png", 300, 700);
@@ -797,7 +861,6 @@ public class Decisions extends DeadByDaylight_Decider {
 	{
 		
 		String absoluteResult = "<html>Results:<br><br>Character:<br>-" + finalChar;
-		//if (itemChoice != "blank" || itemChoice != null)
 		if (itemChoice != null)
 		{
 			absoluteResult = absoluteResult + "<br><br>Item:<br>-" + itemChoice;

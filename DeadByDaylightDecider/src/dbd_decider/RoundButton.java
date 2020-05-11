@@ -21,17 +21,12 @@ public class RoundButton extends JButton {
 	public RoundButton(ImageIcon imageIcon)
 	{
 		super(imageIcon);
-		//Remove highlighted border when clicked
 		setFocusPainted(false);
 
-		// These statements shape the button so that it
-		// becomes a circle rather than an oval.
 		Dimension size = getPreferredSize();
 		size.width = size.height = Math.max(size.width, size.height);
 		setPreferredSize(size);
 
-		// This call causes the JButton not to paint the background.
-		// This allows us to paint a round background.
 		setContentAreaFilled(false);
 	}
 	
